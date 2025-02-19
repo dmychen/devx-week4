@@ -170,3 +170,71 @@ route.get('/users', async (req, res) => {
 
 > Notice that both this GET route endpoint and the earlier POST endpoint both use '/users' as the URL. This is normal; we often will use a single HTTP request URI to represent all POST/GET/PUT/DELETE operations if they are all acting on the same resource. (All manipulating/accessing our `users` collection).
 
+
+#### Get a Particular User
+
+Let's add a route that gets a particular user based on their name (fetch all documents with a name that matches the query name).
+
+We define a new function that retrieves a user from the database by name.
+
+```js
+async function getUser (name) {
+    // get user collection and find users that match name
+    const usersCollection = client.db(DB_NAME).collection("users");
+    return await usersCollection.find({ name: name }).toArray();
+};
+```
+
+We could create a new route to fetch users by name, or we could simply modify the route we already created to accept an optional URI parameter `/:name?`. If a name is not provided, we return all names.
+
+```js
+route.get('/users/:name?', async (req, res) => {
+    try {
+        const name = req.params.name;
+        let users;
+
+        if (name) {
+            users = await getUser(name); // get users by name
+        }
+        else {
+            users = await getAllUsers(); // get users
+        }
+    
+        console.log("Fetched users:", users);
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Failed to fetch all users:", error);
+        res.status(500).json({ error: message });
+    }
+});
+```
+
+
+#### Fix Connection Promise
+
+With how we wrote our code earlier with `await client.connect();`, the server will wait forever for the connection to succeed, and if it doesn't ever succeed we're stuck.
+
+What we can do instead is wait for either the database to connect, or for a timeout to occur, by using a **promise**.
+
+```js
+const CONNECTION_TIMEOUT = 5000;
+
+// ...other code
+
+async function connectToDatabase() {
+    try {
+        console.log("Connecting to MongoDB...");
+        
+        const connectPromise = client.connect(); // Create promise for connection
+        const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('MongoDB connection timeout')), CONNECTION_TIMEOUT));
+        await Promise.race([connectPromise, timeoutPromise]);
+
+        await client.db(DB_NAME).command({ ping: 1 });
+        console.log("Successfully connected!");
+    } catch (error) {
+        console.error("Database connection failed.");
+        process.exit(1);
+    }
+}
+```
