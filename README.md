@@ -35,7 +35,8 @@ npm install
 1. Create a [MongoDB](https://www.mongodb.com/) account.
 2. Create a new project.
 3. Make sure your current IP address is added (Otherwise any requests to the database won't go through).
-4. Find the URI (connection string) for your project.
+4. Find the URI (connection string) for your project. 
+5. Find your user name ("Database Access")
 
 ### Connecting to the Database
 

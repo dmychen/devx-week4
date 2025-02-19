@@ -8,7 +8,6 @@ const uri = "mongodb+srv://daniel:devx-week4@cluster-test.xzfom.mongodb.net/?ret
 const DB_NAME = "daniel";
 const CONNECTION_TIMEOUT = 5000;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -20,7 +19,7 @@ const client = new MongoClient(uri, {
 async function connectToDatabase() {
     try {
         console.log("Connecting to MongoDB...");
-        
+
         const connectPromise = client.connect(); // Create promise for connection
         const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('MongoDB connection timeout')), CONNECTION_TIMEOUT));
@@ -92,7 +91,7 @@ route.post('/users', async (req, res) => {
     }
 });
 
-route.get('/users/:name', async (req, res) => {
+route.get('/users/:name?', async (req, res) => {
     try {
         const name = req.params.name;
         let users;
